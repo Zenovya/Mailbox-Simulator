@@ -1,22 +1,57 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.querySelector('#formulario')
+    const emailIn = document.querySelector('#email');
+    const ccIn = document.querySelector('#cc');
+    const titleIn = document.querySelector('#asunto');
+    const messageIn = document.querySelector('#mensaje');
+    const btnSubmit = document.querySelector('#formulario button[type="submit"]');
+    const btnReset = document.querySelector('#formulario button[type="reset"]');
+    const spin = document.querySelector('#spinner');
     const email = {
         email: '',
+        cc: '',
         asunto: '',
         mensaje: ''
     }
-    const emailIn = document.querySelector('#email');
-    const titleIn = document.querySelector('#asunto');
-    const messageIn = document.querySelector('#mensaje');
-    const btnSubmit = document.querySelector('#formulario button[type="submit"]')
-
-    //Generando evento blur para cada input
+    
+    //Generando eventos para cada campo
     emailIn.addEventListener('input', valid);
+    ccIn.addEventListener('input', valid)
     titleIn.addEventListener('input', valid);
     messageIn.addEventListener('input', valid);
+    form.addEventListener('submit', spinner);
+    btnReset.addEventListener('click', resetForm);
 
+    function spinner(e){
+        e.preventDefault();
+
+        spin.classList.add('flex');
+        spin.classList.remove('hidden');
+
+        //Delay para desaparecer el spinner
+        setTimeout(()=>{
+            spin.classList.add('hidden');
+            spin.classList.remove('flex');
+            
+            //Reiniciando form
+            resetForm();
+
+            //Alerta de exito
+            const alertGz = document.createElement('P');
+            alertGz.classList.add('bg-green-500', 'text-white', 'p-2', 'text-center', 'rounded-lg', 'mt-10', 'font-bold', 'text-sm', 'uppercase');
+            alertGz.textContent = 'Mensaje enviado correctamente';
+            form.appendChild(alertGz);
+
+            setTimeout(()=>{
+                alertGz.remove();
+            },2000);
+
+        }, 2500);
+    }
 
     function valid(e) {
-        if (e.target.value.trim() === '') {
+        if (e.target.value.trim() === '' && e.target.id !== 'cc') {
             alert(`(!) El campo ${e.target.id} es obligatorio.`, e.target.parentElement);
             email[e.target.name] = '';
             submitValid();
@@ -30,14 +65,25 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        if(e.target.id === 'cc' && e.target.value !== ''){
+            if(!validEmail(e.target.value)){
+                alert('(!) El Email no es valido.', e.target.parentElement);
+                email[e.target.name] = '';
+                submitValid();
+                return;
+            }
+        } 
+
         //Borrando alertas
         clearAlert(e.target.parentElement);
 
         //asignar datos
         email[e.target.name] = e.target.value.trim().toLowerCase();
+        email.cc = 'null';
 
         //Comprobando para activar el btn de enviar
         submitValid();
+        console.log(email);
     }
 
     function alert(msg, div) {
@@ -77,5 +123,14 @@ document.addEventListener('DOMContentLoaded', function () {
         btnSubmit.disabled = false;
     }
 
+    function resetForm(){
+        email.email = '';
+        email.cc = '';
+        email.asunto = '';
+        email.mensaje = '';
+
+        form.reset();
+        submitValid();
+    }
 
 });
